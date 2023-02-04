@@ -2,7 +2,7 @@ from prefect_gcp import GcpCredentials
 from prefect_gcp.cloud_storage import GcsBucket
 
 # Load GCP Credentials block 
-gcp_cred_block = GcpCredentials.load("prefect-gcs-2023-creds")
+gcp_cred_block = GcpCredentials.load("ny-taxi-gcp-creds")
 
 # Define the GcsBucket 
 

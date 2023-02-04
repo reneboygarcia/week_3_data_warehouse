@@ -46,7 +46,7 @@ def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
 # Upload local parquet file to GCS
 @task(log_prints=True)
 def write_gcs(path: Path) -> None:
-    gcp_block = GcsBucket.load("ny-taxi-bucket")
+    gcp_block = GcsBucket.load("prefect-gcs-block-ny-taxi")
     gcp_block.upload_from_path(from_path=path, to_path=path)
     print("Loaded data to GCS...Hooray!")
     return
