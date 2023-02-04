@@ -6,7 +6,7 @@ gcp_cred_block = GcpCredentials.load("ny-taxi-gcp-creds")
 
 # Define the GcsBucket 
 
-gcs_bucket = GcsBucket(bucket="ny_taxi_bucket_dtc", 
+gcs_bucket = GcsBucket(bucket="ny_taxi_bucket_de_2023", 
     gcp_credentials=gcp_cred_block)
 
-gcs_bucket.save("ny-taxi-bucket", overwrite=True)
+gcs_bucket.save("prefect-gcs-block-ny-taxi", overwrite=True)
