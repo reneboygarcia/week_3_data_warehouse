@@ -62,7 +62,6 @@ def write_gcs(path: Path) -> None:
 def etl_web_to_gcs(year: int, month: int) -> None:
     dataset_file = f"fhv_tripdata_{year}-{month:02}"
     dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/{dataset_file}.csv.gz"
-
     # execution
     path_name = fetch(dataset_url)
     df_tweak = read_and_tweak(path_name, dataset_url)
@@ -82,7 +81,7 @@ def etl_parent_gcs_flow(
 # run main
 if __name__ == "__main__":
     year = 2019
-    months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    months = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1]
 
     etl_parent_gcs_flow(year, months)
 
