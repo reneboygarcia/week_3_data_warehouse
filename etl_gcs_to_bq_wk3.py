@@ -40,9 +40,7 @@ def write_bq(df: pd.DataFrame, year: int) -> None:
 
 # ETL flow to load data to BigQuery
 @flow(log_prints=True, name="etl-gcs-to-bq")
-def etl_gcs_to_bq():
-    year = 2019
-    month = 1
+def etl_gcs_to_bq(year: int, month: int):
 
     # step-by-step execution
     path = extract_from_gcs(year, month)
