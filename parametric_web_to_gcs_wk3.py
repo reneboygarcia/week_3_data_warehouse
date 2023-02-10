@@ -65,7 +65,7 @@ def etl_web_to_gcs(year: int, month: int) -> None:
     # execution
     path_name = fetch(dataset_url)
     df_tweak = read_and_tweak(path_name, dataset_url)
-    path = write_local(df_tweak, dataset_file)
+    path = write_local(df_tweak, year, dataset_file)
     write_gcs(path)
 
 
