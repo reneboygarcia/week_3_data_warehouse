@@ -14,7 +14,7 @@ def extract_from_gcs(year: int, month: int) -> Path:
     gcs_path = f"fhv_tripdata_{year}-{month:02}.parquet"
     gcs_block = GcsBucket.load("prefect-gcs-block-ny-taxi")
     gcs_block.get_directory(from_path=gcs_path, local_path=f"{year}/")
-    return Path(f"{year}/{gcs_path}")
+    return Path(f"./{year}/{gcs_path}")
 
 
 # Data cleaning example
