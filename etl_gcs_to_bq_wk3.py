@@ -23,19 +23,6 @@ def etl_gcs_to_bq(year: int, month: int):
             bigquery.SchemaField("dispatching_base_num", "STRING", mode="NULLABLE"),
             bigquery.SchemaField("pickup_datetime", "TIMESTAMP", mode="NULLABLE"),
             bigquery.SchemaField("dropOff_datetime", "TIMESTAMP", mode="NULLABLE"),
-            bigquery.SchemaField("PUlocationID", "FLOAT", mode="NULLABLE"),
-            bigquery.SchemaField("DOlocationID", "FLOAT", mode="NULLABLE"),
-            bigquery.SchemaField(
-                "SR_Flag",
-                "FLOAT",
-                mode="NULLABLE",
-            ),
-            bigquery.SchemaField(
-                "SR_Flag",
-                "INTEGER",
-                mode="NULLABLE",
-            ),
-            bigquery.SchemaField("Affiliated_base_number", "STRING", mode="NULLABLE"),
         ],
     )
     uri = f"gs://ny_taxi_bucket_de_2023/2019/fhv_tripdata_{year}-{month:02}.parquet"
