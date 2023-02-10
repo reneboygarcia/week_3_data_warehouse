@@ -19,12 +19,6 @@ def etl_gcs_to_bq(year: int, month: int):
 
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.PARQUET,
-        schema=[
-            bigquery.SchemaField("dispatching_base_num", "STRING", mode="NULLABLE"),
-            bigquery.SchemaField("pickup_datetime", "TIMESTAMP", mode="NULLABLE"),
-            bigquery.SchemaField("dropOff_datetime", "TIMESTAMP", mode="NULLABLE"),
-            bigquery.SchemaField("Affiliated_base_number", "STRING", mode="NULLABLE"),
-        ],
     )
     uri = f"gs://ny_taxi_bucket_de_2023/2019/fhv_tripdata_{year}-{month:02}.parquet"
 
