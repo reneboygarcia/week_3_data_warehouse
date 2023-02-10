@@ -3,49 +3,31 @@ from pathlib import Path
 import urllib.request
 import pandas as pd
 from prefect import task, flow
-from prefect_gcp.cloud_storage import GcsBucket
+from prefect_gcp.cloud_storage import GcsBucket, cloud_storage_download_blob_to_file
 from prefect_gcp import GcpCredentials
+from google.cloud import bigquery
 
 print("Setup Complete")
 
 # Download trip data from GCS
-@task(log_prints=True, name="extract-from-gcs")
-def extract_from_gcs(year: int, month: int) -> Path:
-    gcs_path = f"fhv_tripdata_{year}-{month:02}.parquet"
-    gcs_block = GcsBucket.load("prefect-gcs-block-ny-taxi")
-    gcs_block.get_directory(from_path=gcs_path, local_path=f"./{year}/")
-    return Path(f"./{year}/{gcs_path}")
-
-
-# Data cleaning example
-@task(log_prints=True, name="transform")
-def transform(path: Path) -> pd.DataFrame:
-    df = pd.read_parquet(path=path)
-    print(f"Number of rows: {df.shape[0]}")
-    print(f"Columns Dtype: {df.dtypes}")
-    return df
-
-
-# Write DataFrame to BigQuery
-def write_bq(df: pd.DataFrame, year: int) -> None:
-    gcp_credentials_block = GcpCredentials.load("ny-taxi-gcp-creds")
-    df.to_gbq(
-        destination_table=f"ny_taxi.ny_taxi_tripdata_{year}",
-        project_id="dtc-de-2023",
-        credentials=gcp_credentials_block.get_credentials_from_service_account(),
-        chunksize=500_000,
-        if_exists="append",
-    )
-
-
-# ETL flow to load data to BigQuery
-@flow(log_prints=True, name="etl-gcs-to-bq")
+@task(log_prints=True, name="etl-gcs-to-bq")
 def etl_gcs_to_bq(year: int, month: int):
+    client = bigquery.Client()
+    table_id = "dtc-de-2023.ny_taxi.ny_taxi_tripdata_2019"
+    
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.PARQUET,
+    )
+    uri = f"gs://ny_taxi_bucket_de_2023/2019/fhv_tripdata_{year}-{month:02}.parquet"
 
-    # step-by-step execution
-    path = extract_from_gcs(year, month)
-    df = transform(path)
-    write_bq(df, year)
+    load_job = client.load_table_from_uri(
+        uri, table_id, job_config=job_config
+    )  # Make an API request.
+
+    load_job.result()  # Waits for the job to complete.
+
+    destination_table = client.get_table(table_id)
+    print(f"Loaded {destination_table.num_rows} rows.")
 
 
 # Parent flow ETL
