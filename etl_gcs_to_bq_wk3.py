@@ -5,7 +5,6 @@ import pandas as pd
 from prefect import task, flow
 from prefect_gcp.cloud_storage import GcsBucket
 from prefect_gcp import GcpCredentials
-from google.cloud import bigquery
 
 print("Setup Complete")
 
@@ -21,7 +20,7 @@ def extract_from_gcs(year: int, month: int) -> Path:
 # Data cleaning example
 @task(log_prints=True, name="transform")
 def transform(path: Path) -> pd.DataFrame:
-    df = pd.read_parquet(path, engine="pyarrow")
+    df = pd.read_parquet(path=path)
     print(f"Number of rows: {df.shape[0]}")
     print(f"Columns Dtype: {df.dtypes}")
     return df
@@ -66,7 +65,3 @@ if __name__ == "__main__":
     months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     etl_parent_bq_flow(year, months)
-
-# run main
-if __name__ == "__main__":
-    etl_gcs_to_bq()
