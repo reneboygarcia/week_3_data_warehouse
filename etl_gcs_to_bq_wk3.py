@@ -23,8 +23,6 @@ def etl_gcs_to_bq(year: int, month: int):
             bigquery.SchemaField("dispatching_base_num", "STRING", mode="NULLABLE"),
             bigquery.SchemaField("pickup_datetime", "TIMESTAMP", mode="NULLABLE"),
             bigquery.SchemaField("dropOff_datetime", "TIMESTAMP", mode="NULLABLE"),
-            bigquery.SchemaField("PUlocationID", "INT64", mode="NULLABLE"),
-            bigquery.SchemaField("DOlocationID", "INT64", mode="NULLABLE"),
             bigquery.SchemaField("Affiliated_base_number", "STRING", mode="NULLABLE"),
         ],
     )
