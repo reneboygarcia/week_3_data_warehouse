@@ -5,6 +5,7 @@ import pandas as pd
 from prefect import task, flow
 from prefect_gcp.cloud_storage import GcsBucket
 from prefect_gcp import GcpCredentials
+from google.cloud import bigquery
 
 print("Setup Complete")
 
@@ -38,6 +39,39 @@ def write_bq(df: pd.DataFrame, year: int) -> None:
     )
 
 
+# Remove data from GCS after data transfer to BigQuery
+def deduplicate_data():
+    job_config = bigquery.QueryJobConfig(
+        # Run at batch priority, which won't count toward concurrent rate limit.
+        priority=bigquery.QueryPriority.BATCH
+    )
+
+    dedup_query = """
+                    WITH TABLE1 AS (
+                        SELECT 
+                            ARRAY_AGG(t 
+                                ORDER BY `dispatching_base_num` DESC 
+                                LIMIT 1)[OFFSET(0)] AS first_row
+                        FROM `dtc-de-2023.ny_taxi.ny_taxi_tripdata_2019` AS t
+                        GROUP BY `_id`
+                        )
+
+                    CREATE OR REPLACE TABLE `dashlabs.dlb_lake.invoices`
+                    AS
+                    SELECT first_row.* 
+                    FROM TABLE1 
+                """
+
+    job = bq_client.query(dedup_query, job_config=job_config)
+
+    while job.state == "RUNNING":
+        job = bq_client.get_job(job.job_id, location=job.location)
+        time.sleep(1)
+        print("Job {} is currently in state {}".format(job.job_id, job.state))
+
+    return job.job_id
+
+
 # ETL flow to load data to BigQuery
 @flow(log_prints=True, name="etl-gcs-to-bq")
 def etl_gcs_to_bq():
@@ -48,6 +82,7 @@ def etl_gcs_to_bq():
     path = extract_from_gcs(year, month)
     df = transform(path)
     write_bq(df, year)
+    deduplicate()
 
 
 # Parent flow ETL
