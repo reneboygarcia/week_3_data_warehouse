@@ -12,9 +12,11 @@ print("Setup Complete")
 # Download trip data from GCS
 @task(log_prints=True, name="etl-gcs-to-bq")
 def etl_gcs_to_bq(year: int, month: int):
-    client = bigquery.Client()
+    gcp_creds_block = GcpCredentials.load("prefect-gcs-2023-creds")
+    gcp_creds = gcp_creds_block.get_credentials_from_service_account()
+    client = bigquery.Client(credentials=gcp_creds)
     table_id = "dtc-de-2023.ny_taxi.ny_taxi_tripdata_2019"
-    
+
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.PARQUET,
     )
