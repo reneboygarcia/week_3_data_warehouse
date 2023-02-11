@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import urllib.request
 import pandas as pd
-from google.cloud import bigquery
 from prefect import task, flow
 from prefect_gcp.cloud_storage import GcsBucket
 
