@@ -18,7 +18,7 @@ def get_bigquery_creds():
 
 
 # Upload data from GCS to BigQuery
-@task(log_prints=True, name="etl-gcs-to-bq")
+@flow(log_prints=True, name="etl-gcs-to-bq")
 def etl_gcs_to_bq(year: int, month: int):
 
     gcp_creds = get_bigquery_creds()
