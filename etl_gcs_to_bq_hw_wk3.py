@@ -1,9 +1,5 @@
 # imports
-from pathlib import Path
-import urllib.request
-import pandas as pd
 from prefect import task, flow
-from prefect_gcp.cloud_storage import GcsBucket, cloud_storage_download_blob_to_file
 from prefect_gcp import GcpCredentials
 from google.cloud import bigquery
 
@@ -41,8 +37,7 @@ def etl_gcs_to_bq(year: int, month: int):
             bigquery.SchemaField("Affiliated_base_number", "STRING", mode="NULLABLE"),
         ],
     )
-    uri = f"gs://ny_taxi_bucket_de_2023/{year}/fhv_tripdata_{year}-{month:02}.csv.gz"
-
+    uri = f"gs://ny_taxi_bucket_de_2023/{year}/fhv_tripdata_{year}-{month:02}.parquet"
     load_job = client.load_table_from_uri(
         uri, table_id, job_config=job_config
     )  # Make an API request.
