@@ -1,5 +1,6 @@
 # imports
 import os
+from datetime import datetime
 from pathlib import Path
 import urllib.request
 import pandas as pd
@@ -17,9 +18,13 @@ def fetch(dataset_url: str):
 
 
 # Read and tweak to fix the dtypes of pick-up and drop-off
+# https://towardsdatascience.com/4-tricks-you-should-know-to-parse-date-columns-with-pandas-read-csv-27355bb2ad0e
 @task(log_prints=True, name="read-and-tweak-df")
 def read_tweak_df(src: str) -> pd.DataFrame:
-    df = pd.read_csv(src, parse_dates=[2, 3], compression="gzip")
+    custom_date_parser = lambda x: datetime.strptime(x, "%Y-%d-%m %H:%M:%S")
+    df = pd.read_csv(
+        src, parse_dates=[2, 3], date_parser=custom_date_parser, compression="gzip"
+    )
     return df
 
 
