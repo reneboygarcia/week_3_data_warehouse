@@ -30,7 +30,7 @@ def write_local(df: pd.DataFrame, year: int, dataset_file: str) -> Path:
     path_name = directory / f"{dataset_file}.csv.gz"
     try:
         os.makedirs(directory, exist_ok=True)
-        df.to_csv(path_name, compression="gzip")
+        df.to_csv(path_name, compression="gzip", index=False)
     except OSError as error:
         print(error)
     return path_name
