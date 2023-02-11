@@ -1,0 +1,102 @@
+# imports
+import os
+from pathlib import Path
+import urllib.request
+import pandas as pd
+from google.cloud import bigquery
+from prefect import task, flow
+from prefect_gcp.cloud_storage import GcsBucket
+
+print("Setup Complete")
+
+# Deployment 1
+# Fetch the data from Github url
+@task(log_prints=True, name="fetch-file-dataset_url")
+def fetch(dataset_url: str):
+    filename, _ = urllib.request.urlretrieve(dataset_url)
+    return filename
+
+
+# Read and tweak to fix the dtypes of pick-up and drop-off
+@task(log_prints=True, name="read-and-tweak-df")
+def read_tweak_df(src: str) -> pd.DataFrame:
+    df = pd.read_csv(src, parse_dates=[2, 3], compression="gzip")
+    return df
+
+
+# Write DataFrame to a specific folder after tweaking the DataFrame
+@task(log_prints=True, name="write-to-local-file")
+def write_local(df: pd.DataFrame, year: int, dataset_file: str) -> Path:
+    directory = Path(f"{year}")
+    path_name = directory / f"{dataset_file}.csv.gz"
+    try:
+        os.makedirs(directory, exist_ok=True)
+        df.to_csv(path_name, compression="gzip")
+    except OSError as error:
+        print(error)
+    return path_name
+
+
+# https://app.prefect.cloud/account/975bd9ed-5aef-4c8a-a413-23073fef3acb/workspace/a711abba-f5ae-4b00-9315-34f92f089b77/blocks/catalog
+# Upload local csv.gz file to GCS
+@task(log_prints=True)
+def write_gcs(path: Path) -> None:
+    gcs_block = GcsBucket.load("prefect-gcs-block-ny-taxi")
+    gcs_block.upload_from_path(from_path=path, to_path=path)
+    print("Loaded data to GCS...Hooray!")
+    return
+
+
+# Delete file after uploads
+@task(log_prints=True, name="deduplicate-local-data")
+def deduplicate(path: Path) -> None:
+    try:
+        os.remove(path)
+        os.rmdir(path)
+        print("Successfully deleted directory and local files...hep hep hooray")
+    except OSError as error:
+        print(f"The system cannot find the file specified: {error}")
+    return
+
+
+@flow(log_prints=True, name="etl-web-gcs")
+def etl_web_gcs(year: int, month: int):
+    # Parameters
+    year = 2019
+    month = 5
+    dataset_file = f"fhv_tripdata_{year}-{month:02}"
+    dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/{dataset_file}.csv.gz"
+
+    # Execution
+    # Fetch the data from Github url
+    source = fetch(dataset_url)
+
+    # no choice but to tweak the data types for us to upload this to BQ
+    # Read and tweak to fix the dytpes of pick-up and drop-off
+    df_tweak = read_tweak_df(source)
+
+    # write df to local
+    path_local = write_local(df_tweak, year, dataset_file)
+
+    # Upload dataset from local to gcs
+    write_gcs(path_local)
+
+    # Delete file after uploads
+    deduplicate(path_local)
+
+    # Next step is to create a separate deployment from GCS to BigQuery
+
+
+# Create Parent flow to loop
+@flow(name="etl-parent-web-gcs")
+def etl_parent_web_gcs(year: int, months: list):
+    year = 2019
+    months = [2]
+
+    for month in months:
+        etl_web_gcs(year, month)
+
+
+# Run main
+if __name__ == "__main__":
+    etl_parent_web_gcs()
