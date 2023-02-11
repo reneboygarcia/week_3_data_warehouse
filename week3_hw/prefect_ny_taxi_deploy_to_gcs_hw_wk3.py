@@ -3,7 +3,7 @@
 # import
 from prefect.filesystems import GitHub
 from prefect.deployments import Deployment
-from week3_hw.etl_web_gcs_hw_wk3 import etl_parent_web_gcs
+from etl_web_gcs_hw_wk3 import etl_parent_web_gcs
 
 # Load GitHub Block
 github_block = GitHub.load("ny-taxi-github-block")
