@@ -61,8 +61,6 @@ def deduplicate(path: Path) -> None:
 @flow(log_prints=True, name="etl-web-gcs")
 def etl_web_gcs(year: int, month: int):
     # Parameters
-    year = 2019
-    month = 5
     dataset_file = f"fhv_tripdata_{year}-{month:02}"
     dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/{dataset_file}.csv.gz"
 
@@ -71,7 +69,7 @@ def etl_web_gcs(year: int, month: int):
     source = fetch(dataset_url)
 
     # no choice but to tweak the data types for us to upload this to BQ
-    # Read and tweak to fix the dytpes of pick-up and drop-off
+    # Read and tweak to fix the dtypes of pick-up and drop-off
     df_tweak = read_tweak_df(source)
 
     # write df to local
@@ -89,9 +87,6 @@ def etl_web_gcs(year: int, month: int):
 # Create Parent flow to loop
 @flow(name="etl-parent-web-gcs")
 def etl_parent_web_gcs(year: int, months: list):
-    year = 2019
-    months = [2]
-
     for month in months:
         etl_web_gcs(year, month)
 
