@@ -22,7 +22,7 @@ def etl_gcs_to_bq(year: int, month: int):
     table_id = "dtc-de-2023.ny_taxi.ny_taxi_tripdata_2019"
 
     job_config = bigquery.LoadJobConfig(
-        source_format=bigquery.SourceFormat.CSV,
+        source_format=bigquery.SourceFormat.PARQUET,
         schema=[
             bigquery.SchemaField("dispatching_base_num", "STRING", mode="NULLABLE"),
             bigquery.SchemaField("pickup_datetime", "TIMESTAMP", mode="NULLABLE"),
