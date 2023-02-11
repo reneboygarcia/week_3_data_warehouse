@@ -21,10 +21,10 @@ def fetch(dataset_url: str) -> pd.DataFrame:
 
 # Tweak DataFrame,
 @task(log_prints=True, name="read-and-tweak-df")
-def read_and_tweak(path: str, dataset_url: str) -> pd.DataFrame:
-    if dataset_url.endswith(".parquet"):
+def read_and_tweak(path: str) -> pd.DataFrame:
+    if path.endswith(".parquet"):
         df = pd.read_parquet(path=path)
-    elif dataset_url.endswith(".csv.gz"):
+    elif path.endswith(".csv.gz"):
         df = pd.read_csv(path, engine="pyarrow", compression="gzip")
     else:
         df = pd.read_csv(path, engine="pyarrow")
@@ -38,10 +38,10 @@ def read_and_tweak(path: str, dataset_url: str) -> pd.DataFrame:
 @task(log_prints=True, name="write-to-local-file")
 def write_local(df: pd.DataFrame, year: int, dataset_file: str) -> Path:
     directory = Path(f"{year}")
-    path_name = directory / f"{dataset_file}.parquet"
+    path_name = directory / f"{dataset_file}.csv.gz"
     try:
         os.makedirs(directory, exist_ok=True)
-        df.to_parquet(path_name, compression="gzip")
+        df.to_csv(path_name, compression="gzip")
     except OSError as error:
         print(error)
     return path_name

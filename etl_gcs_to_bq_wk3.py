@@ -9,15 +9,24 @@ from google.cloud import bigquery
 
 print("Setup Complete")
 
-# Download trip data from GCS
-@task(log_prints=True, name="etl-gcs-to-bq")
-def etl_gcs_to_bq(year: int, month: int):
+
+@task(log_prints=True, name="get-gcp-creds")
+def get_bigquery_creds():
     gcp_creds_block = GcpCredentials.load("prefect-gcs-2023-creds")
     gcp_creds = gcp_creds_block.get_credentials_from_service_account()
+    return gcp_creds
+
+
+# Upload data from GCS to BigQuery
+@task(log_prints=True, name="etl-gcs-to-bq")
+def etl_gcs_to_bq(year: int, month: int):
+
+    gcp_creds = get_bigquery_creds()
     client = bigquery.Client(credentials=gcp_creds)
     table_id = "dtc-de-2023.ny_taxi.ny_taxi_tripdata_2019"
 
     job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.PARQUET,
         schema=[
             bigquery.SchemaField("dispatching_base_num", "STRING", mode="NULLABLE"),
             bigquery.SchemaField("pickup_datetime", "TIMESTAMP", mode="NULLABLE"),
