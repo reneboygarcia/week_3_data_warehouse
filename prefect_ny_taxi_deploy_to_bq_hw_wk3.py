@@ -3,7 +3,7 @@
 # import
 from prefect.filesystems import GitHub
 from prefect.deployments import Deployment
-from etl_web_gcs_hw_wk3 import etl_parent_local_gcs
+from etl_gcs_to_bq_hw_wk3 import etl_parent_bq_flow
 
 # Fetch storage from GitHub
 github_block = GitHub.load("ny-taxi-github-block")
@@ -11,7 +11,7 @@ github_block = GitHub.load("ny-taxi-github-block")
 # https://docs.prefect.io/api-ref/prefect/deployments/#prefect.deployments.Deployment.build_from_flow
 
 gsc_git_dep = Deployment.build_from_flow(
-    flow=etl_parent_local_gcs,
+    flow=etl_parent_bq_flow,
     name="ny-taxi-flow-bq-hw-wk3",
     storage=github_block,
 )
@@ -23,4 +23,4 @@ if __name__ == "__main__":
     gsc_git_dep.apply()
 
 # to deploy
-# prefect deployment run <> --params '{"year":2019, "months": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1]}'
+# prefect deployment run etl-parent-to-bq/ny-taxi-flow-bq-hw-wk3 --params '{"year":2019, "months": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1]}'
