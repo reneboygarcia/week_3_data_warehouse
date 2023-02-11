@@ -98,4 +98,6 @@ def etl_parent_web_gcs(year: int, months: list):
 
 # Run main
 if __name__ == "__main__":
-    etl_parent_web_gcs()
+    year = 2019
+    months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    etl_parent_web_gcs(year, months)
