@@ -18,13 +18,16 @@ def fetch(dataset_url: str):
 
 
 # Read and tweak to fix the dtypes of pick-up and drop-off
-# https://towardsdatascience.com/4-tricks-you-should-know-to-parse-date-columns-with-pandas-read-csv-27355bb2ad0e
 @task(log_prints=True, name="read-and-tweak-df")
 def read_tweak_df(src: str) -> pd.DataFrame:
-    custom_date_parser = lambda x: datetime.strptime(x, "%Y-%d-%m %H:%M:%S")
-    df = pd.read_csv(
-        src, parse_dates=[2, 3], date_parser=custom_date_parser, compression="gzip"
-    )
+    dtype_cols = {
+        "dispatching_base_num": "string",
+        "PUlocationID": "float64",
+        "DOlocationID": "float64",
+        "SR_Flag": "float64",
+        "Affiliated_base_number": "string",
+    }
+    df = pd.read_csv(src, parse_dates=[1, 2], dtype=dtype_cols, compression="gzip")
     return df
 
 
@@ -32,10 +35,10 @@ def read_tweak_df(src: str) -> pd.DataFrame:
 @task(log_prints=True, name="write-to-local-file")
 def write_local(df: pd.DataFrame, year: int, dataset_file: str) -> Path:
     directory = Path(f"{year}")
-    path_name = directory / f"{dataset_file}.csv.gz"
+    path_name = directory / f"{dataset_file}.parquet"
     try:
         os.makedirs(directory, exist_ok=True)
-        df.to_csv(path_name, compression="gzip", index=False)
+        df.to_parquet(path_name, compression="gzip", index=False)
     except OSError as error:
         print(error)
     return path_name
