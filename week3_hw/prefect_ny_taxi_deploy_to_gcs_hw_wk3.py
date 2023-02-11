@@ -12,7 +12,7 @@ github_block = GitHub.load("ny-taxi-github-block")
 
 gsc_git_dep = Deployment.build_from_flow(
     flow=etl_parent_web_gcs,
-    name="ny-taxi-flow-hw-wk3",
+    name="ny-taxi-flow-gcs-hw-wk3",
     storage=github_block,
 )
 
