@@ -3,7 +3,7 @@
 # import
 from prefect.filesystems import GitHub
 from prefect.deployments import Deployment
-from etl_web_gcs_hw_wk3 import etl_parent_web_gcs
+from week3_hw.etl_web_gcs_hw_wk3 import etl_parent_web_gcs
 
 # Load GitHub Block
 github_block = GitHub.load("ny-taxi-github-block")
@@ -23,4 +23,4 @@ if __name__ == "__main__":
     gsc_git_dep.apply()
 
 # to deploy
-# prefect deployment run etl_parent_web_gcs/ny-taxi-flow-hw-wk3 --params '{"year":2019, "months": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1]}'
+# prefect deployment run etl-parent-web-gcs/ny-taxi-flow-hw-wk3	--params '{"year":2019, "months": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1]}'
