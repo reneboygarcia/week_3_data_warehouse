@@ -38,7 +38,7 @@ def deduplicate_data(year: int):
             query_job.job_id, location=query_job.location
         ),  # Make an API request.
     )
-
+    print("Complete removing duplicate")
     print(f"Job {query_job.job_id} is currently in state {query_job.state}")
 
 
