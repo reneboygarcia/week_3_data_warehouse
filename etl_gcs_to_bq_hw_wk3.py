@@ -19,7 +19,7 @@ def etl_gcs_to_bq(year: int, month: int):
 
     gcp_creds = get_bigquery_creds()
     client = bigquery.Client(credentials=gcp_creds)
-    table_id = "dtc-de-2023.ny_taxi.ny_taxi_tripdata_2019"
+    table_id = f"dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}"
 
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.PARQUET,

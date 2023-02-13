@@ -11,18 +11,35 @@ print("Setup Complete")
 
 
 @task(log_prints=True, name="get-gcp-creds")
-def get_bigquery_creds():
+def get_bigquery_client():
     gcp_creds_block = GcpCredentials.load("prefect-gcs-2023-creds")
     gcp_creds = gcp_creds_block.get_credentials_from_service_account()
-    return gcp_creds
+    client = bigquery.Client(credentials=gcp_creds)
+    return client
+
+
+@task(log_prints=True, name="deduplicate data")
+def deduplicate_data(year: int):
+
+    client = get_bigquery_client()
+    # this will remove the duplicates
+    query_dedup = f"CREATE OR REPLACE TABLE \
+                        dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}  AS ( \
+                            SELECT DISTINCT * \
+                            FROM dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year} \
+                            )"
+
+    # limit query to 10GB
+    safe_config = bigquery.QueryJobConfig(maximum_bytes_billed=10**10)
+    # query
+    client.query(query_dedup, job_config=safe_config)
 
 
 # Upload data from GCS to BigQuery
 @flow(log_prints=True, name="etl-gcs-to-bq")
 def etl_gcs_to_bq(year: int, month: int):
 
-    gcp_creds = get_bigquery_creds()
-    client = bigquery.Client(credentials=gcp_creds)
+    client = get_bigquery_client()
     table_id = f"dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}"
 
     job_config = bigquery.LoadJobConfig(
@@ -60,6 +77,7 @@ def etl_parent_bq_flow(
 ):
     for month in months:
         etl_gcs_to_bq(year, month)
+        deduplicate_data(year)
 
 
 # run main
