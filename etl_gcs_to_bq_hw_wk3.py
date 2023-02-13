@@ -8,7 +8,7 @@ print("Setup Complete")
 # load GCP Credentials
 @task(log_prints=True, name="get-gcp-creds")
 def get_bigquery_creds():
-    gcp_creds_block = GcpCredentials.load("prefect-gcs-2023-creds")
+    gcp_creds_block = GcpCredentials.load("ny-taxi-gcp-creds")
     gcp_creds = gcp_creds_block.get_credentials_from_service_account()
     return gcp_creds
 
