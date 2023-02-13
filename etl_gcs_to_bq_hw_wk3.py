@@ -84,6 +84,7 @@ def etl_parent_bq_flow(
 ):
     for month in months:
         etl_gcs_to_bq(year, month)
+        deduplicate_data(year)
 
 
 # run main
@@ -92,4 +93,3 @@ if __name__ == "__main__":
     months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     etl_parent_bq_flow(year, months)
-    deduplicate_data(year)
