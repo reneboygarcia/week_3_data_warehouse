@@ -26,9 +26,8 @@ def deduplicate_data(year: int):
                             )"
 
     # limit query to 1GB
-    safe_config = bigquery.QueryJobConfig(
-        maximum_bytes_billed=10**9, priority=bigquery.QueryPriority.BATCH
-    )
+    safe_config = bigquery.QueryJobConfig(maximum_bytes_billed=10**9)
+    # priority=bigquery.QueryPriority.BATCH
     # query
     query_job = client.query(query_dedup, job_config=safe_config)
 
