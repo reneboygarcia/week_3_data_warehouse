@@ -67,7 +67,7 @@ def etl_gcs_to_bq(year: int, month: int):
     load_job.result()  # Waits for the job to complete.
 
     destination_table = client.get_table(table_id)
-    print(f"Loaded {destination_table.num_rows} rows.")
+    print(f"{month:02}-{year} | Loaded {destination_table.num_rows:,} rows.")
 
 
 # Parent flow ETL
