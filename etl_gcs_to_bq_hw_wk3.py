@@ -1,24 +1,53 @@
 # imports
+import typing
 from prefect import task, flow
 from prefect_gcp import GcpCredentials
 from google.cloud import bigquery
 
 print("Setup Complete")
 # Deployment 2
-# load GCP Credentials
 @task(log_prints=True, name="get-gcp-creds")
-def get_bigquery_creds():
-    gcp_creds_block = GcpCredentials.load("ny-taxi-gcp-creds")
+def get_bigquery_client():
+    gcp_creds_block = GcpCredentials.load("prefect-gcs-2023-creds")
     gcp_creds = gcp_creds_block.get_credentials_from_service_account()
-    return gcp_creds
+    client = bigquery.Client(credentials=gcp_creds)
+    return client
+
+
+@task(log_prints=True, name="deduplicate data")
+def deduplicate_data(year: int):
+
+    client = get_bigquery_client()
+    # this will remove the duplicates
+    query_dedup = f"CREATE OR REPLACE TABLE \
+                        `dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}`  AS ( \
+                            SELECT DISTINCT * \
+                            FROM `dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}` \
+                            )"
+
+    # limit query to 1GB
+    safe_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=10**9, priority=bigquery.QueryPriority.BATCH
+    )
+    # query
+    query_job = client.query(query_dedup, job_config=safe_config)
+
+    # Check progress
+    query_job = typing.cast(
+        "bigquery.QueryJob",
+        client.get_job(
+            query_job.job_id, location=query_job.location
+        ),  # Make an API request.
+    )
+
+    print(f"Job {query_job.job_id} is currently in state {query_job.state}")
 
 
 # Upload data from GCS to BigQuery
 @flow(log_prints=True, name="etl-gcs-to-bq")
 def etl_gcs_to_bq(year: int, month: int):
 
-    gcp_creds = get_bigquery_creds()
-    client = bigquery.Client(credentials=gcp_creds)
+    client = get_bigquery_client()
     table_id = f"dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}"
 
     job_config = bigquery.LoadJobConfig(
@@ -37,7 +66,8 @@ def etl_gcs_to_bq(year: int, month: int):
             bigquery.SchemaField("Affiliated_base_number", "STRING", mode="NULLABLE"),
         ],
     )
-    uri = f"gs://ny_taxi_bucket_de_2023/{year}/fhv_tripdata_{year}-{month:02}.parquet"
+    uri = f"gs://ny_taxi_bucket_de_2023/2019/fhv_tripdata_{year}-{month:02}.parquet"
+
     load_job = client.load_table_from_uri(
         uri, table_id, job_config=job_config
     )  # Make an API request.
@@ -55,11 +85,12 @@ def etl_parent_bq_flow(
 ):
     for month in months:
         etl_gcs_to_bq(year, month)
+        deduplicate_data(year)
 
 
 # run main
 if __name__ == "__main__":
     year = 2019
-    months = [2]
+    months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     etl_parent_bq_flow(year, months)
