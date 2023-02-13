@@ -25,8 +25,8 @@ def deduplicate_data(year: int):
                             FROM `dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}` \
                             )"
 
-    # limit query to 1GB
-    safe_config = bigquery.QueryJobConfig(maximum_bytes_billed=10**9)
+    # limit query to 10GB
+    safe_config = bigquery.QueryJobConfig(maximum_bytes_billed=10**10)
     # priority=bigquery.QueryPriority.BATCH
     # query
     query_job = client.query(query_dedup, job_config=safe_config)
@@ -84,7 +84,6 @@ def etl_parent_bq_flow(
 ):
     for month in months:
         etl_gcs_to_bq(year, month)
-        deduplicate_data(year)
 
 
 # run main
@@ -93,3 +92,4 @@ if __name__ == "__main__":
     months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     etl_parent_bq_flow(year, months)
+    deduplicate_data(year)
