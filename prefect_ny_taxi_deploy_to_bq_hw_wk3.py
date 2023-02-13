@@ -19,7 +19,7 @@ gsc_git_dep = Deployment.build_from_flow(
 print("Successfully deployed NY Taxi Github Block. Check app.prefect.cloud")
 
 # execute
-if __name__ == "__main__":
+if __name__ == "__main__": 
     gsc_git_dep.apply()
 
 # to deploy

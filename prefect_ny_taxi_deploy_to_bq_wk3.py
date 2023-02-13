@@ -24,3 +24,4 @@ if __name__ == "__main__":
 
 # to deploy
 # prefect deployment run etl-gcs-to-bq/ny-taxi-flow-bq-wk3 --params '{"year":2019, "months": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1]}'
+# prefect deployment run etl-gcs-to-bq/ny-taxi-flow-bq-wk3 --params '{"year":2019, "months": [6]}'
