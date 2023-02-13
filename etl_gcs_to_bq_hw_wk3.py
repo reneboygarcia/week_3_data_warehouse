@@ -14,7 +14,7 @@ def get_bigquery_client():
     return client
 
 
-@task(log_prints=True, name="deduplicate data")
+@flow(log_prints=True, name="deduplicate data")
 def deduplicate_data(year: int):
 
     client = get_bigquery_client()
