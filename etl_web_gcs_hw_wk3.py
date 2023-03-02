@@ -37,7 +37,7 @@ def write_local(df: pd.DataFrame, year: int, dataset_file: str) -> Path:
     directory = Path(f"{year}")
     path_name = directory / f"{dataset_file}.parquet"
     try:
-        os.makedirs(directory, exist_ok=True)
+        directory.mkdir()
         df.to_parquet(path_name, compression="gzip", index=False)
     except OSError as error:
         print(error)
@@ -58,8 +58,9 @@ def write_gcs(path: Path) -> None:
 @task(log_prints=True, name="deduplicate-local-data")
 def deduplicate(path: Path) -> None:
     try:
-        os.remove(path)
-        os.rmdir(path)
+        path.unlink()
+        full_path = path.resolve()
+        full_path.parent.rmdir()
         print("Successfully deleted directory and local files...hep hep hooray")
     except OSError as error:
         print(f"The system cannot find the file specified: {error}")
@@ -101,6 +102,6 @@ def etl_parent_web_gcs(year: int, months: list):
 
 # Run main
 if __name__ == "__main__":
-    year = 2019
-    months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    year = 2021
+    months = [2]
     etl_parent_web_gcs(year, months)

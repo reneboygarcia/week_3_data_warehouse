@@ -47,7 +47,7 @@ def deduplicate_data(year: int):
 def etl_gcs_to_bq(year: int, month: int):
 
     client = get_bigquery_client()
-    table_id = f"dtc-de-2023.ny_taxi.ny_taxi_tripdata_{year}"
+    table_id = f"dtc-de-2023.ny_taxi.fhv_tripdata_{year}"
 
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.PARQUET,
